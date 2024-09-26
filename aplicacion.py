@@ -4,6 +4,7 @@ import sqlite3
 
 def iniciarBase():
   #Se crea la base de datos
+  #Se crea un trycatch por si ya existe y no rompa el programa
   try:
     baseDeDatos = sqlite3.connect("baseDeDatos")
     cursor = baseDeDatos.cursor()
@@ -13,7 +14,10 @@ def iniciarBase():
   except:
     messagebox.showerror("Error", "La base de datos ya existe")
 
-
+def salir():
+  respuesta = messagebox.askyesno("question", "Esta por finalizar el programa ¿Estas seguro?")
+  if respuesta == True:
+    raiz.destroy()
 
 
 #Se importan las librerias que seran utilizadas
@@ -27,7 +31,7 @@ raiz.config(menu=menuBarra, width=450, height=600) #damos un tamaño a la raiz y
 
 menuBase = Menu(menuBarra, tearoff=0) #Menu base de datos
 menuBase.add_command(label="Conectar", command=iniciarBase)
-menuBase.add_command(label="Salir") 
+menuBase.add_command(label="Salir", command=salir) 
 
 menuBorrar = Menu(menuBarra, tearoff=0) #Menu limpiar formulario
 menuBorrar.add_command(label="Limpiar formulario")
