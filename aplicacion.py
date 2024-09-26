@@ -2,6 +2,20 @@ from tkinter import *
 from tkinter import messagebox
 import sqlite3
 
+def iniciarBase():
+  #Se crea la base de datos
+  try:
+    baseDeDatos = sqlite3.connect("baseDeDatos")
+    cursor = baseDeDatos.cursor()
+    #Se crea la tabla
+    cursor.execute("CREATE TABLE USUARIOS (ID INTEGER, NOMBRE_USUARIO VARCHAR(50), PASSWORD VARCHAR(50), APELLIDO VARCHAR(20), DIRECCION VARCHAR(50), COMENTARIO VARCHAR(100))")
+    baseDeDatos.commit()
+  except:
+    messagebox.showerror("Error", "La base de datos ya existe")
+
+
+
+
 #Se importan las librerias que seran utilizadas
 
 raiz = Tk(); #Se crea la raiz
@@ -12,7 +26,7 @@ raiz.config(menu=menuBarra, width=450, height=600) #damos un tamaño a la raiz y
 #A su vez los comandos necesarios para cada uno
 
 menuBase = Menu(menuBarra, tearoff=0) #Menu base de datos
-menuBase.add_command(label="Conectar")
+menuBase.add_command(label="Conectar", command=iniciarBase)
 menuBase.add_command(label="Salir") 
 
 menuBorrar = Menu(menuBarra, tearoff=0) #Menu limpiar formulario
