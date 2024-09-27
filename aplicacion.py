@@ -19,6 +19,11 @@ def salir():
   if respuesta == True:
     raiz.destroy()
 
+def licencia():
+  messagebox.showinfo("Licencia", "Este programa es propiedad de: \n\n Iván Tomás Ravarotto \n\n Version: 0.1")
+
+def masInformacion():
+  messagebox.showinfo("Información", "Este programa se creo como practica sobre python en tkinter y sqlite3. \n\n Espero que sea de su gusto.")
 
 #Se importan las librerias que seran utilizadas
 
@@ -37,8 +42,8 @@ menuBorrar = Menu(menuBarra, tearoff=0) #Menu limpiar formulario
 menuBorrar.add_command(label="Limpiar formulario")
 
 menuAyuda = Menu(menuBarra, tearoff=0) #Menu de ayuda
-menuAyuda.add_command(label="Licencia")
-menuAyuda.add_command(label="Más información")
+menuAyuda.add_command(label="Licencia", command=licencia)
+menuAyuda.add_command(label="Más información", command=masInformacion)
 
 #Sumamos estos menus creados a la barra.
 
