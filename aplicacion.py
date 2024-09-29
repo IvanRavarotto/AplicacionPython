@@ -3,6 +3,8 @@ from tkinter import *
 from tkinter import messagebox
 import sqlite3
 
+'''--------------------------------------------------------------------- Funciones ---------------------------------------------------------------------'''
+
 #Funcion para crear la base e informar si ya esta creada
 def iniciarBase():
   #Se crea la base de datos
@@ -40,13 +42,48 @@ def crear():
   baseDeDatos.commit()
   baseDeDatos.close()
 
-
-
-raiz = Tk(); #Se crea la raiz
-menuBarra = Menu(raiz) #Creamos la barra donde estaran las opciones
-raiz.config(menu=menuBarra, width=450, height=600) #damos un tamaño a la raiz y asignamos el menu
-raiz.title("Aplicacion con base de datos")
-#
+def leer():
+  baseDeDatos = sqlite3.connect("baseDeDatos")
+  cursor = baseDeDatos.cursor()
+  #se debe buscar por ID tambien
+  entrada = espacioNombre.get()
+  cursor.execute("SELECT * FROM USUARIOS WHERE NOMBRE_USUARIO = ?", (entrada, ))
+  informacion = cursor.fetchall()
+  #Se debe cargar los datos traidos en cada entrada}
+  #Se crea un if por si encuentra información o no:
+  if informacion:
+      for i in informacion:
+        espacioID.delete(0, END)
+        espacioID.insert(0, i[0])
+        espacioNombre.delete(0, END)
+        espacioNombre.insert(0, i[1])
+        espacioApellido.delete(0, END)
+        espacioApellido.insert(0, i[3])
+        espacioDireccion.delete(0, END)
+        espacioDireccion.insert(0, i[4])
+        espacioComentario.delete("1.0", END)
+        espacioComentario.insert("1.0", i[5])
+        baseDeDatos.close()
+  else:
+    entrada = espacioID.get()
+    cursor.execute("SELECT * FROM USUARIOS WHERE ID = ?", (entrada, ))
+    informacion = cursor.fetchall()
+    baseDeDatos.close()
+    if informacion:
+      for i in informacion:
+        espacioID.delete(0, END)
+        espacioID.insert(0, i[0])
+        espacioNombre.delete(0, END)
+        espacioNombre.insert(0, i[1])
+        espacioApellido.delete(0, END)
+        espacioApellido.insert(0, i[3])
+        espacioDireccion.delete(0, END)
+        espacioDireccion.insert(0, i[4])
+        espacioComentario.delete("1.0", END)
+        espacioComentario.insert("1.0", i[5])
+        baseDeDatos.close()
+    else:
+      messagebox.showerror("Error", "No se encontraron resultados por ID o Nombre. \n\nVerifique que la información cargada sea correcta")
 
 def limpiar():
   espacioID.delete(0, END)
@@ -54,11 +91,18 @@ def limpiar():
   espacioPassword.delete(0, END)
   espacioApellido.delete(0, END)
   espacioDireccion.delete(0, END)
+  espacioComentario.delete("1.0", END)
 
+'''--------------------------------------------------------------------- Apartado visual ---------------------------------------------------------------------'''
+raiz = Tk(); #Se crea la raiz
+menuBarra = Menu(raiz) #Creamos la barra donde estaran las opciones
+raiz.config(menu=menuBarra, width=450, height=600) #damos un tamaño a la raiz y asignamos el menu
+raiz.title("Aplicacion con base de datos")
+
+'''--------------------------------------------------------------------- Menus ---------------------------------------------------------------------'''
 
 #Creamos los correspondientes menus y sus opciones
 #A su vez los comandos necesarios para cada uno
-
 menuBase = Menu(menuBarra, tearoff=0) #Menu base de datos
 menuBase.add_command(label="Conectar", command=iniciarBase)
 menuBase.add_command(label="Salir", command=salir) 
@@ -81,6 +125,7 @@ menuBarra.add_cascade(label="Ayuda", menu=menuAyuda)
 frame = Frame(raiz)
 frame.pack()
 
+'''--------------------------------------------------------------------- Apartado entradas ---------------------------------------------------------------------'''
 
 #Se crean cada espacio de texto para recibir los datos.
 espacioID = Entry(frame);
@@ -100,11 +145,13 @@ espacioDireccion = Entry(frame);
 espacioDireccion.grid(row=4, column=1, padx=15, pady=5)
 
 #El espacio del comentario sera de tipo Text el cual poseera un stroll a la derecha
-espacioComentario = Text(frame, width=15, height=7);
+espacioComentario = Text(frame, width=30, height=10);
 espacioComentario.grid(row=5, column=1, padx=15, pady=5)
 scroll=Scrollbar(frame, command=espacioComentario.yview)
 scroll.grid(row=5, column=2, sticky="nsew")
 espacioComentario.config(yscrollcommand=scroll)
+
+'''--------------------------------------------------------------------- Apartado labels ---------------------------------------------------------------------'''
 
 #Se crean los labels con dada identificador para cada dato
 labelID = Label(frame, text="ID: ")
@@ -129,12 +176,14 @@ labelComentario.grid(row=5, column=0, sticky="e", padx=5, pady=5)
 frame2 = Frame(raiz)
 frame2.pack()
 
+'''--------------------------------------------------------------------- Apartado botones ---------------------------------------------------------------------'''
+
 #Boton crear/create
 crearBoton = Button(frame2, text="Crear/Create", command=crear)
 crearBoton.grid(row=0, column=0, sticky="e", padx=5, pady=5)
 
 #Boton leer/read
-leerBoton = Button(frame2, text="Leer/Read")
+leerBoton = Button(frame2, text="Leer/Read", command=leer)
 leerBoton.grid(row=0, column=1, sticky="e", padx=5, pady=5)
 
 #Boton actualizar/update
