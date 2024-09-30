@@ -3,53 +3,74 @@ from tkinter import *
 from tkinter import messagebox
 import sqlite3
 
-'''--------------------------------------------------------------------- Funciones ---------------------------------------------------------------------'''
+''' -------------------------------------------------- Funciones -------------------------------------------------- '''
 
-#Funcion para crear la base e informar si ya esta creada
-def iniciarBase():
-  #Se crea la base de datos
-  #Se crea un trycatch por si ya existe y no rompa el programa
+#Funcion crearBase()
+#La misma se utilizara en el menu de "Base de datos", para crear la base de datos y/o notificar si la misma ya existe.
+def crearBase():
+  #Se genera un trycatch
+  #Con el objetivo que primero se intente generar la base de datos y la misma ya cree la tabla con los valores que deben contener, por ejemplo: nombre del usuario.
   try:
-    baseDeDatos = sqlite3.connect("baseDeDatos")
+    #Se crea la base de datos
+    baseDeDatos = sqlite3.connect("baseDeDatos.db")
+    #Se crea el cursor
     cursor = baseDeDatos.cursor()
-    #Se crea la tabla
+    #Se crea la tabla con los valores de una ID autoincremental y que se asigna automaticamente, nombre del usuario, contraseña, apellido, direccion y un comentario sobre el mismo.
     cursor.execute("CREATE TABLE USUARIOS (ID INTEGER PRIMARY KEY AUTOINCREMENT, NOMBRE_USUARIO VARCHAR(50), PASSWORD VARCHAR(50), APELLIDO VARCHAR(20), DIRECCION VARCHAR(50), COMENTARIO VARCHAR(100))")
+    #Se confirman la transacción
     baseDeDatos.commit()
+    #Se imprime un mensaje de aviso que la base fue creada con exito.
     messagebox.showinfo("Base de datos", "La base de datos, fue creada con exito.")
   except:
+    #En caso que la base ya exista, se informara con el siguiente mensaje
     messagebox.showerror("Error", "La base de datos ya existe")
 
-#Funcion para salir del programa
+#Funcion salir()
+#La funcion salir permitira cerrar el programa en cuyo caso el usuario lo dese realizar asi.
 def salir():
+  #Se genera una pregunta junto a un mensaje para confirmar si realmente desea finalizar el programa
   respuesta = messagebox.askyesno("question", "Esta por finalizar el programa ¿Estas seguro?")
+  #En caso que acepte, se cerrara el mismo, sino continuara ejecutandose
   if respuesta == True:
     raiz.destroy()
 
-#"Licencia" del programa
+#Funcion licencia()
+#Busca mostrar más que nada "información" basica sobre el programa en cuanto a quien lo creo.
 def licencia():
   messagebox.showinfo("Licencia", "Este programa es propiedad de: \n\n Iván Tomás Ravarotto \n\n Version: 0.1")
 
-#Información adicional
+#Funcion masInformacion()
+#Brindara "información" adicional en cuanto al programa.
 def masInformacion():
   messagebox.showinfo("Información", "Este programa se creo como practica sobre python en tkinter y sqlite3. \n\n Espero que sea de su gusto.")
 
-#Funcion para cargar/crear los datos en la base de datos
+#Funcion crear()
+#Esta funcion se encargara de cargar los datos de un usuario con lo ingresado en el formulario
 def crear():
+  #Se genera una variable usuario que guarda lo ingresado en para entrada del formulario
   usuario = (espacioNombre.get(), espacioPassword.get(), espacioApellido.get(), espacioDireccion.get(), espacioComentario.get("1.0", END))
-  baseDeDatos = sqlite3.connect("baseDeDatos")
+  #Se conecta con la base de dayos
+  baseDeDatos = sqlite3.connect("baseDeDatos.db")
+  #Se crea el cursor
   cursor = baseDeDatos.cursor()
+  #Se cargan los datos en la tabla, con los valores ingresaros desde la variable usuario.
   cursor.execute("INSERT INTO USUARIOS VALUES (NULL, ?, ?, ?, ?, ?)", usuario)
+  #Se confirma la transacción
   baseDeDatos.commit()
+  #Se cierra la base de datos
   baseDeDatos.close()
+  #Se imprime mensaje confirmando carga
+  messagebox.showinfo("Carga", "Los datos fueron cargados con exito.")
+
 
 def leer():
-  baseDeDatos = sqlite3.connect("baseDeDatos")
+  baseDeDatos = sqlite3.connect("baseDeDatos.db")
   cursor = baseDeDatos.cursor()
   #se debe buscar por ID tambien
   entrada = espacioNombre.get()
   cursor.execute("SELECT * FROM USUARIOS WHERE NOMBRE_USUARIO = ?", (entrada, ))
   informacion = cursor.fetchall()
-  #Se debe cargar los datos traidos en cada entrada}
+  #Se debe cargar los datos traidos en cada entrada
   #Se crea un if por si encuentra información o no:
   if informacion:
       for i in informacion:
@@ -63,7 +84,6 @@ def leer():
         espacioDireccion.insert(0, i[4])
         espacioComentario.delete("1.0", END)
         espacioComentario.insert("1.0", i[5])
-        baseDeDatos.close()
   else:
     entrada = espacioID.get()
     cursor.execute("SELECT * FROM USUARIOS WHERE ID = ?", (entrada, ))
@@ -81,9 +101,9 @@ def leer():
         espacioDireccion.insert(0, i[4])
         espacioComentario.delete("1.0", END)
         espacioComentario.insert("1.0", i[5])
-        baseDeDatos.close()
     else:
       messagebox.showerror("Error", "No se encontraron resultados por ID o Nombre. \n\nVerifique que la información cargada sea correcta")
+  baseDeDatos.close()
 
 def limpiar():
   espacioID.delete(0, END)
@@ -93,18 +113,32 @@ def limpiar():
   espacioDireccion.delete(0, END)
   espacioComentario.delete("1.0", END)
 
-'''--------------------------------------------------------------------- Apartado visual ---------------------------------------------------------------------'''
+#Funcion actualizar()
+def actualizar():
+  #Se debe buscar por ID tambien
+  entrada = espacioID.get()
+  baseDeDatos = sqlite3.connect("baseDeDatos.db")
+  cursor = baseDeDatos.cursor()
+  cursor.execute("SELECT * FROM USUARIOS WHERE NOMBRE_USUARIO = ?", (entrada,))
+  #Si existe, se actualizara los datos
+  if cursor.fetchone():
+    cursor.execute("INSERT USUARIOS SET NOMBRE_USUARIO = ?, APELLIDO = ?, DIRECCION = ?, COMENTARIO = ?", (espacioNombre.get(), espacioApellido.get(), espacioDireccion.get(), espacioComentario.get("1.0", END), espacioID.get()))
+    baseDeDatos.commit()
+  baseDeDatos.close()
+
+''' -------------------------------------------------- Aplicación -------------------------------------------------- '''
+
 raiz = Tk(); #Se crea la raiz
 menuBarra = Menu(raiz) #Creamos la barra donde estaran las opciones
 raiz.config(menu=menuBarra, width=450, height=600) #damos un tamaño a la raiz y asignamos el menu
 raiz.title("Aplicacion con base de datos")
 
-'''--------------------------------------------------------------------- Menus ---------------------------------------------------------------------'''
+''' -------------------------------------------------- Menus -------------------------------------------------- '''
 
 #Creamos los correspondientes menus y sus opciones
 #A su vez los comandos necesarios para cada uno
 menuBase = Menu(menuBarra, tearoff=0) #Menu base de datos
-menuBase.add_command(label="Conectar", command=iniciarBase)
+menuBase.add_command(label="Crear base", command=crearBase)
 menuBase.add_command(label="Salir", command=salir) 
 
 menuBorrar = Menu(menuBarra, tearoff=0) #Menu limpiar formulario
@@ -120,12 +154,11 @@ menuBarra.add_cascade(label="Base de datos", menu=menuBase)
 menuBarra.add_cascade(label="Limpiar", menu=menuBorrar)
 menuBarra.add_cascade(label="Ayuda", menu=menuAyuda)
 
-#Se crean los campos para los datos
+''' -------------------------------------------------- Campos de datos -------------------------------------------------- '''
 
+#Se crean los campos para los datos
 frame = Frame(raiz)
 frame.pack()
-
-'''--------------------------------------------------------------------- Apartado entradas ---------------------------------------------------------------------'''
 
 #Se crean cada espacio de texto para recibir los datos.
 espacioID = Entry(frame);
@@ -151,7 +184,7 @@ scroll=Scrollbar(frame, command=espacioComentario.yview)
 scroll.grid(row=5, column=2, sticky="nsew")
 espacioComentario.config(yscrollcommand=scroll)
 
-'''--------------------------------------------------------------------- Apartado labels ---------------------------------------------------------------------'''
+''' -------------------------------------------------- Labels -------------------------------------------------- '''
 
 #Se crean los labels con dada identificador para cada dato
 labelID = Label(frame, text="ID: ")
@@ -172,11 +205,11 @@ labelDireccion.grid(row=4, column=0, sticky="e", padx=15, pady=5)
 labelComentario = Label(frame, text="Comentario: ")
 labelComentario.grid(row=5, column=0, sticky="e", padx=5, pady=5)
 
+''' -------------------------------------------------- Botones -------------------------------------------------- '''
+
 #Se crean los botones
 frame2 = Frame(raiz)
 frame2.pack()
-
-'''--------------------------------------------------------------------- Apartado botones ---------------------------------------------------------------------'''
 
 #Boton crear/create
 crearBoton = Button(frame2, text="Crear/Create", command=crear)
@@ -187,7 +220,7 @@ leerBoton = Button(frame2, text="Leer/Read", command=leer)
 leerBoton.grid(row=0, column=1, sticky="e", padx=5, pady=5)
 
 #Boton actualizar/update
-actualizarBoton = Button(frame2, text="Actualizar/Update")
+actualizarBoton = Button(frame2, text="Actualizar/Update", command=actualizar)
 actualizarBoton.grid(row=0, column=2, sticky="e", padx=5, pady=5)
 
 #Boton borrar/delete
