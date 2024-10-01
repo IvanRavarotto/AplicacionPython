@@ -1,10 +1,10 @@
+''' -------------------------------------------------- Imports -------------------------------------------------- '''
 #Se importan las librerias que seran utilizadas
 from tkinter import *
 from tkinter import messagebox
 import sqlite3
 
 ''' -------------------------------------------------- Funciones -------------------------------------------------- '''
-
 #Funcion crearBase()
 #La misma se utilizara en el menu de "Base de datos", para crear la base de datos y/o notificar si la misma ya existe.
 def crearBase():
@@ -44,6 +44,16 @@ def licencia():
 def masInformacion():
   messagebox.showinfo("Información", "Este programa se creo como practica sobre python en tkinter y sqlite3. \n\n Espero que sea de su gusto.")
 
+#Funcion limpiar()
+#solo funciona para limpiar el formulario.
+def limpiar():
+  espacioID.delete(0, END)
+  espacioNombre.delete(0, END)
+  espacioPassword.delete(0, END)
+  espacioApellido.delete(0, END)
+  espacioDireccion.delete(0, END)
+  espacioComentario.delete("1.0", END)
+
 #Funcion crear()
 #Esta funcion se encargara de cargar los datos de un usuario con lo ingresado en el formulario
 def crear():
@@ -62,18 +72,24 @@ def crear():
   #Se imprime mensaje confirmando carga
   messagebox.showinfo("Carga", "Los datos fueron cargados con exito.")
 
-
+#Funcion leer()
+#Esta funcion busca permitir encontrar un usuario por nombre o ID y traer los datos del mismo.
 def leer():
+  #Se conecta con la base
   baseDeDatos = sqlite3.connect("baseDeDatos.db")
+  #Se crea el cursor
   cursor = baseDeDatos.cursor()
-  #se debe buscar por ID tambien
+  #Se obtiene primero el nombre del usuario.
   entrada = espacioNombre.get()
+  #Se busca bajo el nombre
   cursor.execute("SELECT * FROM USUARIOS WHERE NOMBRE_USUARIO = ?", (entrada, ))
+  #Se guarda la información sobre una variable.
   informacion = cursor.fetchall()
   #Se debe cargar los datos traidos en cada entrada
   #Se crea un if por si encuentra información o no:
   if informacion:
       for i in informacion:
+        #Se limpia y se traen los datos guardados sobre la base.
         espacioID.delete(0, END)
         espacioID.insert(0, i[0])
         espacioNombre.delete(0, END)
@@ -84,11 +100,14 @@ def leer():
         espacioDireccion.insert(0, i[4])
         espacioComentario.delete("1.0", END)
         espacioComentario.insert("1.0", i[5])
+  #En caso que no lo encuentre por usuario, se realizara la busqueda por ID
   else:
+    #Se recupera la ID ingresada
     entrada = espacioID.get()
+    #Se busca bajo ID
     cursor.execute("SELECT * FROM USUARIOS WHERE ID = ?", (entrada, ))
+    #Se guardan los datos que se obtienen de la ID
     informacion = cursor.fetchall()
-    baseDeDatos.close()
     if informacion:
       for i in informacion:
         espacioID.delete(0, END)
@@ -101,30 +120,29 @@ def leer():
         espacioDireccion.insert(0, i[4])
         espacioComentario.delete("1.0", END)
         espacioComentario.insert("1.0", i[5])
+    #En cuyo caso no se encuentre por ID o usuario, se dara un mensaje de error informando que no hay resultados.
     else:
       messagebox.showerror("Error", "No se encontraron resultados por ID o Nombre. \n\nVerifique que la información cargada sea correcta")
+  #Se cierra la base.
   baseDeDatos.close()
-
-def limpiar():
-  espacioID.delete(0, END)
-  espacioNombre.delete(0, END)
-  espacioPassword.delete(0, END)
-  espacioApellido.delete(0, END)
-  espacioDireccion.delete(0, END)
-  espacioComentario.delete("1.0", END)
 
 #Funcion actualizar()
+#Es la que se utilizara para actualizar elementos
 def actualizar():
-  #Se debe buscar por ID tambien
-  entrada = espacioID.get()
+  #Se conecta con la base de datos
   baseDeDatos = sqlite3.connect("baseDeDatos.db")
+  #Se crea el cursor
   cursor = baseDeDatos.cursor()
-  cursor.execute("SELECT * FROM USUARIOS WHERE NOMBRE_USUARIO = ?", (entrada,))
-  #Si existe, se actualizara los datos
-  if cursor.fetchone():
-    cursor.execute("INSERT USUARIOS SET NOMBRE_USUARIO = ?, APELLIDO = ?, DIRECCION = ?, COMENTARIO = ?", (espacioNombre.get(), espacioApellido.get(), espacioDireccion.get(), espacioComentario.get("1.0", END), espacioID.get()))
-    baseDeDatos.commit()
+  #Se guardan los valores ingresados "actualizados", en el formulario
+  usuario = (espacioNombre.get(), espacioApellido.get(), espacioDireccion.get(), espacioComentario.get("1.0", END), espacioID.get());
+  #Se actualiza la base de datos
+  cursor.execute("UPDATE USUARIOS SET NOMBRE_USUARIO = ?, APELLIDO = ?, DIRECCION = ?, COMENTARIO = ? WHERE ID = ?", usuario)
+  #Se confirma lso cambios
+  baseDeDatos.commit()
   baseDeDatos.close()
+
+  #Funcion eliminar()
+  #Es la que se utilizara para eliminar elementos de la tabla.
 
 ''' -------------------------------------------------- Aplicación -------------------------------------------------- '''
 
