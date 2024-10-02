@@ -139,10 +139,28 @@ def actualizar():
   cursor.execute("UPDATE USUARIOS SET NOMBRE_USUARIO = ?, APELLIDO = ?, DIRECCION = ?, COMENTARIO = ? WHERE ID = ?", usuario)
   #Se confirma lso cambios
   baseDeDatos.commit()
+  #Se gebera mensaje avisando que se actualizaron los datos con exito
+  messagebox.showinfo("Actualizar", "Los datos fueron actualizados con exito.")
+  #Se cierra la base de datos
   baseDeDatos.close()
 
   #Funcion eliminar()
   #Es la que se utilizara para eliminar elementos de la tabla.
+def eliminar():
+  #Se conecta con la base de datos
+  baseDeDatos = sqlite3.connect("baseDeDatos.db")
+  #Se crea el cursor
+  cursor = baseDeDatos.cursor()
+  #Se recupera la ID ingresada
+  entrada = espacioID.get()
+  #Se busca bajo ID y se elimina
+  cursor.execute("DELETE FROM USUARIOS WHERE ID= ?", (entrada, ))
+  #Se confirman los cambios
+  baseDeDatos.commit()
+  #Se genera mensaje dando aviso que se elimino el usuario con exito
+  messagebox.showinfo("Eliminar", "Los datos fueron eliminados con exito.")
+  #Se cierra la base.
+  baseDeDatos.close()
 
 ''' -------------------------------------------------- Aplicación -------------------------------------------------- '''
 
@@ -242,7 +260,7 @@ actualizarBoton = Button(frame2, text="Actualizar/Update", command=actualizar)
 actualizarBoton.grid(row=0, column=2, sticky="e", padx=5, pady=5)
 
 #Boton borrar/delete
-borrarBoton = Button(frame2, text="Borrar/Delete")
+borrarBoton = Button(frame2, text="Borrar/Delete", command=eliminar)
 borrarBoton.grid(row=0, column=3, sticky="e", padx=5, pady=5)
 
 raiz.mainloop();
